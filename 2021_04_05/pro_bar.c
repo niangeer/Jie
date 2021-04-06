@@ -9,7 +9,7 @@ void proc()
   for(; i <= 100; i++)
   {
     bar[i] = '#';
-    printf("[%-100s][%3d%%][%c]\r",bar,i,lable[i%4]);
+    printf("[%-100s][%c][%3d%%]\r",bar,lable[i%4],i);
     fflush(stdout);
     usleep(50000);
   }
