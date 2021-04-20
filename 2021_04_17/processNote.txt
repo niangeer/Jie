@@ -313,3 +313,69 @@
             c，所以exec函数只有出错的返回值而没有成功的返回值
             d， l:list   p:PATH    v:vector  e:env
                                                             
+十一，基础IO  
+    1，open
+       int open(const char *pathname, int flags);   ||   int open(const char *pathname, int flags, mode_t mode);
+               
+       pathname: 要打开或创建的目标文件
+       flags: 打开文件时，可以传入多个参数选项，用下面的一个或者多个常量进行“或”运算，构成flags
+       参数:
+          O_RDONLY: 只读打开
+          O_WRONLY: 只写打开
+          O_RDWR : 读，写打开   
+       注意：这三个常量，必须指定一个且只能指定一个
+          O_CREAT : 若文件不存在，则创建它。需要使用mode选项，来指明新文件的访问权限
+          O_APPEND: 追加写
+                                                                                      
+          mode_t：如目标文件不存在，需要open创建，则第三个参数表示创建文件的默认权限,否则，使用两个参数的open
+       注意：mode_t的权限设置要考虑umask的因素
+                                                                                                      
+       返回值：
+       成功：新打开的文件描述符
+       失败：-1
+
+          
+    2，文件描述符fd
+       a，文件描述符的本质：数组下标
+                  
+       b，文件描述符的分配规则： 从最小的未被使用的下标开始分配
+                              
+       c，重定向的本质： 在系统底层对文件描述符开启和关闭的操作
+                                      
+       d，追加等这类的操作本质： 是文件打开方式的操作
+                                          
+    补充：Linux进程默认情况下会有3个缺省打开的文件描述符，分别是标准输入0， 标准输出1， 标准错误2
+                                                      
+          task_struct -> struct files_struct -> files_struct内部的 struct file* fd_array[] \
+          -> struct file(里面装的是属性：name、inode等，与方法：函数指针) -> file
+                                                                        
+          open打开文件的本质：
+          将磁盘文件加载到内存，然后创建struct file管理文件，再将struct file与进程进行关联（在数组中遍历找到\
+          最小未使用的下标，将下标分配给struct file），再返回下标（文件描述符）
+                                                                                              
+          对Linux下一切皆文件的理解：
+          实际上是使用了面向对象的思想，将硬盘、显示器等等当成不同的对象，从而进行文件的各种操作。不过Linux下用的是
+          C语言，没有成员函数，用函数指针代替了成员函数
+                                                                                                                        
+      3，重定向
+            
+        a， > ：输出重定向  >> :追加重定向   < :输入重定向
+                    
+        b，dup2 系统调用
+           int dup2(int oldfd, int newfd);
+                                     
+        例：4是普通文件，1是标准输出
+            dup2(4,1);
+            即把fd_array[]中的4数据拷贝一份到1将1覆盖，完成重定向
+
+      4，FILE
+        a，因为IO相关函数与系统调用接口对应，并且库函数封装系统调用，所以本质上，访问文件都是通过fd访问的。
+                  
+        b，所以C库当中的FILE结构体内部，必定封装了fd
+                          
+        c，C语言FILE结构体中最主要是存了两个数据，一个是缓冲区一个是文件描述符(fd)
+                                  
+        补充：printf等输入输出库函数会自带缓冲区（用户级缓冲区），例printf将要输入文件的数据放在缓冲区，当fclose或fflush或进程结束时
+              调用write把缓冲区的数据往操作系统刷新
+                                               
+                                                                     
