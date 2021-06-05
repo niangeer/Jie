@@ -134,6 +134,7 @@ public:
 						subMin = subMin->_left;
 					}
 					cur->_key = subMin->_key;
+					cur->_val = subMin->_val;
 
 					if (smParent->_left == subMin)
 						smParent->_left = subMin->_right;
